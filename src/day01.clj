@@ -1,7 +1,7 @@
 (ns aoc)
 (require '[clojure.string :as str])
 
-(defn read-input [file] (vec (str/split-lines (slurp file))))
+(defn read-input [file] (str/split-lines (slurp file)))
 
 (defn parse-digits [x] (filter number? (map read-string (str/split x #""))))
 
@@ -23,6 +23,20 @@
                 "eight" "8",
                 "nine" "9"}))
 
+(defn replace-double-digits
+  [x]
+  (str/replace
+    x
+    #"twone|eightwo|eighthree|threeight|fiveight|nineight|oneight|sevenine"
+    {"twone" "21",
+     "eightwo" "82",
+     "eighthree" "83",
+     "threeight" "38",
+     "fiveight" "58",
+     "nineight" "98",
+     "oneight" "18",
+     "sevenine" "79"}))
+
 (defn part1
   [input]
   (->> input
@@ -34,6 +48,7 @@
 (defn part2
   [input]
   (->> input
+       (map replace-double-digits)
        (map replace-digits)
        (map parse-digits)
        (map first-last)
