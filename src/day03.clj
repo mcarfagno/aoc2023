@@ -19,6 +19,7 @@
                     (lazy-seq (next-value m)))))]
     (next-value (re-matcher re s))))
 
+;; https://github.com/abyala/advent-2023-clojure/blob/main/docs/day03.md
 (defn parse-numbers
   ([line y]
    (map (fn [{:keys [value start end]}]
