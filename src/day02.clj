@@ -1,8 +1,6 @@
 (ns aoc)
 (require '[clojure.string :as str])
 
-(def available-cubes {"red" 12, "green" 13, "blue" 14})
-
 (defn read-input [file] (str/split-lines (slurp file)))
 
 (defn get-games
@@ -14,6 +12,7 @@
                   (str/split game-results #";")]))
           x)))
 
+;; this is ugly but im bad with regex
 (defn get-max-reds
   [a]
   (apply max
@@ -23,10 +22,12 @@
   [a]
   (apply max
     (map read-string (map second (re-seq #"(\d+)[^\d]+blue" (str/join a))))))
+
 (defn get-max-green
   [a]
   (apply max
     (map read-string (map second (re-seq #"(\d+)[^\d]+green" (str/join a))))))
+
 (defn solve1
   [input]
   (->> input
@@ -37,4 +38,13 @@
        (keys)
        (reduce +)))
 
-(println (solve1 (read-input "../test/day02.txt")))
+(defn solve2
+  [input]
+  (->> input
+       (get-games)
+       (map (fn [[k v]]
+              (* (* (get-max-reds v) (get-max-green v)) (get-max-blue v))))
+       (reduce +)))
+
+(println (solve1 (read-input "../input/day02.txt")))
+(println (solve2 (read-input "../input/day02.txt")))
