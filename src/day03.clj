@@ -1,25 +1,38 @@
 (ns aoc)
 (require '[clojure.string :as str])
+(require '[clojure.set :as cs])
 
-(def input-file "../test/day03.txt")
+(def input-file "../input/day03.txt")
 (defn read-input [file] (str/split-lines (slurp file)))
 (defn parse-schematic [x] (for [line x] (str/split line #"")))
 (defn get-from-schematic [x [col row]] (nth (nth x col) row))
 
+;; https://github.com/abyala/advent-2023-clojure/blob/main/docs/day03.md
+(defn re-matcher-seq
+  "Returns a lazy sequence of maps from applying a regular expression `re` to the string `s`. Each returned map
+  will be of form `{:value v, :start x, :end y}` where `:value` is the text value from the captured group, and
+  `:start` and `:end` are the start and end indexes of that group's characters."
+  [re s]
+  (letfn [(next-value [m]
+            (when (.find m)
+              (cons {:value (.group m), :start (.start m), :end (.end m)}
+                    (lazy-seq (next-value m)))))]
+    (next-value (re-matcher re s))))
+
+(defn parse-numbers
+  ([line y]
+   (map (fn [{:keys [value start end]}]
+          {:value (parse-long value),
+           :points (set (map #(vector % y) (range start end)))})
+     (re-matcher-seq #"\d+" line))))
+
+; ty regex-101
 (defn get-symbols-idx
   [x]
   (for [col (range (count x))
         row (range (count (first x)))
-        :when (re-matches #"[$]|[#]|[*]|[-]|[*]|[+]"
-                          (get-from-schematic x [col row]))]
-    [col row]))
-
-(defn get-numbers-idx
-  [x]
-  (for [col (range (count x))
-        row (range (count (first x)))
-        :when (re-matches #"\d" (get-from-schematic x [col row]))]
-    [col row]))
+        :when (re-matches #"[^\d+|.]|[+]" (get-from-schematic x [col row]))]
+    [row col]))
 
 (defn surrounding-idx
   [[a b]]
@@ -35,15 +48,26 @@
          (map surrounding-idx
            (get-symbols-idx (parse-schematic (read-input input-file)))))))
 
-; create seq containing indices of digits close to a symbol
-(defn candidates [x] (filter (fn [a] (contains? valid-positions a)) x))
+(defn get-numbers
+  [x]
+  (for [col (range (count x))
+        :let [n (parse-numbers (nth x col) col)]]
+    (filter (fn [nn]
+              (not= #{}
+                    (clojure.set/intersection (get nn :points)
+                                              valid-positions)))
+      n)))
 
 (defn part1
   [input]
   (->> input
-       (parse-schematic)
-       (get-numbers-idx)
-       (candidates))) ;;sequences of indices where a valid number is located
+       (get-numbers)
+       (flatten)
+       (map (fn [x] (get x :value)))
+       (reduce +)
+       ;(filter (fn [[k v]] ))
+  ))
+       ;;sequences of indices where a valid number is located
 
 
 (println (part1 (read-input input-file)))
