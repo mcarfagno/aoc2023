@@ -28,25 +28,24 @@
      (re-matcher-seq #"\d+" line))))
 
 ; ty regex-101
-(defn get-symbols-idx
+(defn get-symbols-pos
   [x]
   (for [col (range (count x))
         row (range (count (first x)))
         :when (re-matches #"[^\d+|.]|[+]" (get-from-schematic x [col row]))]
     [row col]))
 
-(defn surrounding-idx
+(defn surrounding
   [[a b]]
-  [[(inc a) b] [(dec a) b] [a (inc b)] [a (dec b)] [(inc a) (inc b)]
-   [(dec a) (inc b)] [(inc a) (dec b)] [(dec a) (dec b)]])
+  (for [x [a (inc a) (dec a)] y [b (inc b) (dec b)]] (vector x y)))
 
 ;; set of valid schematics positions for digits to be in
 ;; aka set of all idx adjacent to a symbol
 (def valid-positions
   (set (reduce into
          []
-         (map surrounding-idx
-           (get-symbols-idx (parse-schematic (read-input input-file)))))))
+         (map surrounding
+           (get-symbols-pos (parse-schematic (read-input input-file)))))))
 
 (defn get-numbers
   [x]
