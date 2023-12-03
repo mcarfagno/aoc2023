@@ -40,7 +40,6 @@
   [[(inc a) b] [(dec a) b] [a (inc b)] [a (dec b)] [(inc a) (inc b)]
    [(dec a) (inc b)] [(inc a) (dec b)] [(dec a) (dec b)]])
 
-
 ;; set of valid schematics positions for digits to be in
 ;; aka set of all idx adjacent to a symbol
 (def valid-positions
@@ -51,8 +50,11 @@
 
 (defn get-numbers
   [x]
+  ;; parse parts and their number from each line
   (for [col (range (count x))
         :let [n (parse-numbers (nth x col) col)]]
+    ;; filter out parts whose points do not intersect with the points around
+    ;; symbols
     (filter (fn [nn]
               (not= #{}
                     (clojure.set/intersection (get nn :points)
@@ -65,10 +67,7 @@
        (get-numbers)
        (flatten)
        (map (fn [x] (get x :value)))
-       (reduce +)
-       ;(filter (fn [[k v]] ))
-  ))
-       ;;sequences of indices where a valid number is located
+       (reduce +)))
 
 
 (println (part1 (read-input input-file)))
