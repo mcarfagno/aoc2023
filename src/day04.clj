@@ -20,13 +20,29 @@
        (map #(if (pos? %) (exp 2 (dec %)) 0))
        (reduce +)))
 
+
+(defn multipliers
+  [x]
+  (second (reduce (fn [[ptr multipliers] ticket]
+                    (let [indices (range (inc ptr) (+ (inc ptr) ticket))]
+                      [(inc ptr)
+                       (reduce (fn [old-multipliers i]
+                                 (update old-multipliers
+                                         i
+                                         #(+ % (nth old-multipliers ptr))))
+                         multipliers
+                         indices)]))
+            [0 (vec (repeat (count x) 1))]
+            x)))
+
 (defn solve2
   [input]
   (->> input
        (map parse-card)
        (map (fn [[hand winning]]
               (count (clojure.set/intersection hand winning))))
-       (map #(if (pos? %) (exp 2 (dec %)) 0))
+       (multipliers)
        (reduce +)))
+
 (println (solve1 (read-input "../input/day04.txt")))
 (println (solve2 (read-input "../input/day04.txt")))
