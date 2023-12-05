@@ -4,8 +4,6 @@
 
 (def input-file "../input/day03.txt")
 (defn read-input [file] (str/split-lines (slurp file)))
-(defn parse-schematic [x] (for [line x] (str/split line #"")))
-(defn get-from-schematic [x [col row]] (nth (nth x col) row))
 
 ;; https://github.com/abyala/advent-2023-clojure/blob/main/docs/day03.md
 (defn re-matcher-seq
@@ -27,46 +25,46 @@
            :points (set (map #(vector % y) (range start end)))})
      (re-matcher-seq #"\d+" line))))
 
-; ty regex-101
-(defn get-symbols-pos
-  [x]
-  (for [col (range (count x))
-        row (range (count (first x)))
-        :when (re-matches #"[^\d+|.]|[+]" (get-from-schematic x [col row]))]
-    [row col]))
+(defn parse-symbols
+  ([line y]
+   (map (fn [{:keys [value start end]}]
+          {:value value, :points (set (map #(vector % y) (range start end)))})
+     (re-matcher-seq #"[^\d+|.]|[+]" line))))
+
+;; utility to apply parse-X to each line of the schematic
+(defn parse-from-schematic
+  [x parser]
+  ;; parse parts and their number from each line
+  (flatten (for [col (range (count x)) :let [n (parser (nth x col) col)]] n)))
+
+(defn adjacent?
+  [a b]
+  (not= #{} (clojure.set/intersection (get a :points) (get b :points))))
 
 (defn surrounding
   [[a b]]
   (for [x [a (inc a) (dec a)] y [b (inc b) (dec b)]] (vector x y)))
 
-;; set of valid schematics positions for digits to be in
-;; aka set of all idx adjacent to a symbol
-(def valid-positions
-  (set (reduce into
-         []
-         (map surrounding
-           (get-symbols-pos (parse-schematic (read-input input-file)))))))
-
-(defn get-numbers
+(defn expand-points
   [x]
-  ;; parse parts and their number from each line
-  (for [col (range (count x))
-        :let [n (parse-numbers (nth x col) col)]]
-    ;; filter out parts whose points do not intersect with the points around
-    ;; symbols
-    (filter (fn [nn]
-              (not= #{}
-                    (clojure.set/intersection (get nn :points)
-                                              valid-positions)))
-      n)))
+  {:value (get x :value), :points (set (surrounding (first (get x :points))))})
+
+(def all-symbols (parse-from-schematic (read-input input-file) parse-symbols))
+(def all-numbers (parse-from-schematic (read-input input-file) parse-numbers))
+(def expanded (map #(expand-points %) all-symbols))
+;(println all-symbols)
+;(println all-numbers)
+;(println expanded)
+
+
+(def valid-parts
+  (filter (fn [x] (pos? (count (for [y expanded :when (adjacent? x y)] y))))
+    all-numbers))
 
 (defn part1
-  [input]
-  (->> input
-       (get-numbers)
-       (flatten)
+  []
+  (->> valid-parts
        (map (fn [x] (get x :value)))
        (reduce +)))
 
-
-(println (part1 (read-input input-file)))
+(println (part1))
