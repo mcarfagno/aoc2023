@@ -51,14 +51,14 @@
 
 (def all-symbols (parse-from-schematic (read-input input-file) parse-symbols))
 (def all-numbers (parse-from-schematic (read-input input-file) parse-numbers))
-(def expanded (map #(expand-points %) all-symbols))
 ;(println all-symbols)
 ;(println all-numbers)
-;(println expanded)
-
 
 (def valid-parts
-  (filter (fn [x] (pos? (count (for [y expanded :when (adjacent? x y)] y))))
+  (filter (fn [x]
+            (pos? (count (for [y (map #(expand-points %) all-symbols)
+                               :when (adjacent? x y)]
+                           y))))
     all-numbers))
 
 (defn part1
@@ -67,4 +67,18 @@
        (map (fn [x] (get x :value)))
        (reduce +)))
 
+(defn adjacent-parts [x] (count (for [y all-numbers :when (adjacent? x y)] y)))
+
+(def gears
+  (filter #(= 2 (adjacent-parts %))
+    (map #(expand-points %) (filter #(= (:value %) "*") all-symbols))))
+
+(defn part2
+  []
+  (->> gears
+       (map (fn [x] (filter #(adjacent? % x) all-numbers)))
+       (map #(* (get (first %) :value) (get (second %) :value)))
+       (reduce +)))
+
 (println (part1))
+(println (part2))
