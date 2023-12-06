@@ -22,4 +22,14 @@
        (map count)
        (reduce *)))
 
+(defn kerning [x] (map #(parse-long (str/join "" (map str %))) x))
+
+(defn solve2
+  [input]
+  (->> input
+       (kerning)
+       (winnables)
+       (count)))
+
 (println (solve1 (read-input "../input/day06.txt")))
+(println (solve2 (read-input "../input/day06.txt")))
