@@ -75,4 +75,59 @@
        (flatten) ; make 1-d
        (total_winnings)))
 
-(println (solve1 (read-input "../input/day07.txt")))
+;;----
+(defn card-priority-joker
+  [x]
+  (case (str x)
+    "A" 0
+    "K" 1
+    "Q" 2
+    "T" 3
+    "9" 4
+    "8" 5
+    "7" 6
+    "6" 7
+    "5" 8
+    "4" 9
+    "3" 10
+    "2" 12
+    "J" 13))
+
+(defn apply-jokers [j [h1 h2]] [(+ h1 j) h2])
+
+(defn vec-remove
+  "remove elem in coll"
+  [pos coll]
+  (into (subvec coll 0 pos) (subvec coll (inc pos))))
+
+(defn has-priority-joker?
+  [x y]
+  (let [a (get x :hand)
+        b (get y :hand)]
+    (loop [idx 0]
+      (case (compare (card-priority-joker (get a idx))
+                     (card-priority-joker (get b idx)))
+        -1 true
+        1 false
+        0 (recur (inc idx))))))
+
+;; count each occurrence then take the first higher 2
+;; this "encodes" the hand
+(defn hand-type-joker
+  [x]
+  (let [occ (for [c camel-cards] (char-count c (get x :hand)))
+        jokers (nth occ 3)]
+    (apply-jokers jokers (take 2 (reverse (sort (vec-remove 3 (vec occ)))))))) ;remove jokers then count
+
+(defn solve2
+  [input]
+  (->> input
+       (map get-hand)
+       (group-by #(rank (hand-type-joker %))) ;initial "sorting", group by rank
+       (into (sorted-map)) ; make sure its sorted
+       (map #(sort has-priority-joker? (second %))) ; sort the groups
+       (flatten) ; make 1-d
+       (total_winnings)))
+
+;(println (solve1 (read-input "../input/day07.txt")))
+(println (solve2 (read-input "../input/day07.txt")))
