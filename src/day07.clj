@@ -48,11 +48,11 @@
     "2" 12))
 
 (defn has-priority?
-  [x y]
+  [x y order]
   (let [a (get x :hand)
         b (get y :hand)]
     (loop [idx 0]
-      (case (compare (card-priority (get a idx)) (card-priority (get b idx)))
+      (case (compare (order (get a idx)) (order (get b idx)))
         -1 true
         1 false
         0 (recur (inc idx))))))
@@ -75,7 +75,7 @@
        (flatten) ; make 1-d
        (total_winnings)))
 
-;;----
+;; Messy part 2
 (defn card-priority-joker
   [x]
   (case (str x)
@@ -129,5 +129,5 @@
        (flatten) ; make 1-d
        (total_winnings)))
 
-;(println (solve1 (read-input "../input/day07.txt")))
+(println (solve1 (read-input "../input/day07.txt")))
 (println (solve2 (read-input "../input/day07.txt")))

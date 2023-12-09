@@ -5,14 +5,12 @@
   (map #(vec (map parse-long (re-seq #"[-]?\d+" %)))
     (str/split-lines (slurp file))))
 
-(defn diff [[a b]] (- b a))
-
 (defn extrapolate
   [samples]
   (loop [s samples
          placeholders []]
     (cond (every? zero? s) (concat placeholders [0])
-          :else (recur (map diff (partition 2 1 s))
+          :else (recur (map (fn [[a b]] (- b a)) (partition 2 1 s))
                        (concat placeholders [(last s)])))))
 
 (defn solve1

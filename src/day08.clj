@@ -13,10 +13,10 @@
 (defn next-node
   [current next-step]
   (let [{curr-node :node, step :step, nodes :map} current
-        direction (first (filter #(= curr-node (:node %)) nodes))]
+        bifurcarion (first (filter #(= curr-node (:node %)) nodes))]
     (case curr-node
       "ZZZ" (reduced current)
-      {:node (if (= next-step "R") (:right direction) (:left direction)),
+      {:node (if (= next-step "R") (:right bifurcarion) (:left bifurcarion)),
        :step (inc step),
        :map nodes})))
 
