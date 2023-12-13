@@ -5,7 +5,11 @@
   [file]
   (map #(vec (str/split-lines %)) (str/split (slurp file) #"\n\n")))
 
-(defn palindrome? [coll] (= (seq coll) (reverse coll)))
+(defn transpose [m] (apply mapv vector m))
+
+(defn palindrome?
+  [coll]
+  (and (even? (count coll)) (= (seq coll) (reverse coll))))
 
 (defn reflection? [x] (every? palindrome? x))
 
@@ -18,13 +22,21 @@
       ;(println s)
       (cond (= i l) nil
             :else (if (reflection? s)
-                    i
+                    (+ i (* 0.5 (count (first s)))) ; columns on LEFT
                     (recur (inc i) (map #(apply str (drop 1 %)) s)))))))
 
-(defn solve1
+(defn solve1p1
   [input]
   (->> input
        (first)
        (get-reflection-idx)))
 
-(println (solve1 (read-input "../test/day13.txt")))
+(defn solve1p2
+  [input]
+  (->> input
+       (second)
+       (transpose)
+       (get-reflection-idx)))
+
+(println (solve1p1 (read-input "../test/day13.txt")))
+(println (solve1p2 (read-input "../test/day13.txt")))
