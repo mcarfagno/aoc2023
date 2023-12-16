@@ -16,36 +16,59 @@
 
 ;; part 2
 (def boxes (into {} (for [box (range 256)] [box []])))
-;;(println boxes)
 
+
+;(defn split-instr
+;  [x]
+;  (if (= 4 (count x))
+;    [(subs x 0 2) (nth x 2) (nth x 3)]
+;    [(subs x 0 2) (nth x 2) nil]))
 (defn split-instr
   [x]
-  (if (= 4 (count x))
-    [(subs x 0 2) (nth x 2) (nth x 3)]
-    [(subs x 0 2) (nth x 2) nil]))
+  (if (str/includes? x "=")
+    [(re-find #"[a-z]+" x) \= (last x)]
+    [(re-find #"[a-z]+" x) \- nil]))
 
-(defn process_eq [boxes id lens] (assoc boxes id (conj (boxes id) lens)))
+;; https://stackoverflow.com/questions/8087115/clojure-index-of-a-value-in-a-list-or-other-collection
+(defn index-of-lens
+  [[e _] coll]
+  (first (keep-indexed #(if (= e (first %2)) %1) coll)))
+
+;; check if exists
+(defn process_eq
+  [boxes id lens]
+  (let [rep-idx (index-of-lens lens (boxes id))]
+    (if (some? rep-idx)
+      (assoc boxes id (assoc (boxes id) rep-idx lens))
+      (assoc boxes id (conj (boxes id) lens)))))
 
 ;; remove lens
 (defn process_da
   [boxes id label]
-  (assoc boxes id (remove #(= label (first %)) (boxes id))))
+  (if (empty? (boxes id))
+    boxes
+    (assoc boxes id (vec (remove #(= label (first %)) (boxes id))))))
 
 (defn process-instr
   [boxes instr]
   (let [[label op focal] (split-instr instr)]
     (case op
-      \= (process_eq boxes (HASH label) {label focal})
+      \= (process_eq boxes (HASH label) [label focal])
       \- (process_da boxes (HASH label) label))))
 
 (defn set-lenses [x] (reduce process-instr boxes x))
 
-
+(defn box-focusing-power
+  [[k v]]
+  (reduce +
+    (for [i (range (count v))]
+      (* (inc k) (* (inc i) (Character/digit (second (nth v i)) 10))))))
 
 (defn solve2
   [input]
   (->> input
        (set-lenses)
-       (println)))
+       (map box-focusing-power)
+       (reduce +)))
 
-(println (solve2 (read-input "../test/day15.txt")))
+(println (solve2 (read-input "../input/day15.txt")))
