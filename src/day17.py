@@ -3,10 +3,10 @@ from enum import Enum
 
 
 class direction(Enum):
-    UP = 1
-    DOWN = 2
-    LEFT = 3
-    RIGHT = 4
+    RIGHT = (+1, 0)
+    LEFT = (-1, 0)
+    UP = (0, +1)
+    DOWN = (0, -1)
 
 
 class WeightedGrid:
@@ -17,14 +17,6 @@ class WeightedGrid:
         for y in range(self.height):
             for x in range(self.width):
                 self.weights[(x, y)] = int(grid[y][x])
-
-        # direction -> next x y
-        self.dirs = {
-            direction.RIGHT: (+1, 0),
-            direction.LEFT: (-1, 0),
-            direction.UP: (0, +1),
-            direction.DOWN: (0, -1),
-        }
 
     def cost(self, from_node, to_node):
         (x, y, _, _) = to_node
@@ -75,10 +67,10 @@ class WeightedGrid:
 
     def neighbors(self, id):
         (x, y, d, n) = id
-        # n+d -> next d next n
+
         neighbors = []
         for dn, nn in self.next_dir(d, n):
-            (xs, ys) = self.dirs[dn]
+            (xs, ys) = dn.value
             neighbors.append((x + xs, y + ys, dn, nn))
         return filter(self.in_bounds, neighbors)
 
