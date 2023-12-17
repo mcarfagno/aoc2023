@@ -24,12 +24,12 @@ class SquareGrid:
 
     def neighbors(self, id):
         (x, y, dir) = id
-        reflections = self.mirrors[self.tiles[y][x]][dir]
 
         neighbors = []
-        for reflection in reflections:
-            step = self.dirs[reflection]
-            neighbors.append((x + step[0], y + step[1], reflection))
+        reflections = self.mirrors[self.tiles[y][x]][dir]
+        for dir_ in reflections:
+            (xs, ys) = self.dirs[dir_]
+            neighbors.append((x + xs, y + ys, dir_))
 
         return filter(self.in_bounds, neighbors)
 
@@ -39,28 +39,40 @@ def breadth_first_search(graph, start):
     frontier.append(start)
     reached = {}
     reached[start] = True
+    energized = set()
 
     while frontier:
         current = frontier.popleft()
-        print(f"  Visiting {current}")
+        # print(f"  Visiting {current}")
+        energized.add((current[0], current[1]))
         for next in graph.neighbors(current):
             if next not in reached:
                 frontier.append(next)
                 reached[next] = True
 
-    return reached
+    return energized
 
 
 with open("../input/day16.txt") as f:
     grid = [line.strip() for line in f.readlines()]
-    print(grid)
     graph = SquareGrid(grid)
 
-    start = (0, 0, ">")
-    beam = breadth_first_search(graph, start)
+# part 1
+start = (0, 0, ">")
+beam = breadth_first_search(graph, start)
+print(len(beam))
 
-    # part 1
-    cells = set()
-    for x, y, _ in beam.keys():
-        cells.add((x, y))
-    print(len(cells))
+
+# part 2
+h = len(grid)
+w = len(grid[0])
+pos = []
+pos += [(0, i) for i in range(h)]
+pos += [(i, 0) for i in range(w)]
+pos += [(w - 1, i) for i in range(h)]
+pos += [(i, h - 1) for i in range(w)]
+start = [(p[0], p[1], d) for p in pos for d in ("V", "^", ">", "<")]
+
+beams = list(map(lambda x: len(breadth_first_search(graph, x)), start))
+
+print(max(beams))
