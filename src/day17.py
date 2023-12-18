@@ -8,14 +8,14 @@ import heapq
 MIN_STRAIGHT = 3
 MAX_STRAIGHT = 10
 
-direction = {
+move = {
     ">": (+1, 0),
     "<": (-1, 0),
     "^": (0, -1),
     "v": (0, +1),
 }
 
-turns = {
+next_direction = {
     ">": (">", "v", "^"),
     "<": ("<", "v", "^"),
     "^": ("<", ">", "^"),
@@ -53,9 +53,9 @@ class WeightedGrid:
         (x, y, d, n) = id
 
         neighbors = []
-        for dn in turns[d]:
+        for dn in next_direction[d]:
             nn = n + 1 if (dn == d) else 0
-            (xs, ys) = direction[dn]
+            (xs, ys) = move[dn]
             neighbors.append((x + xs, y + ys, dn, nn))
         neighbors = filter(self.in_bounds, neighbors)
         neighbors = filter(self.in_max_straight, neighbors)
@@ -63,13 +63,7 @@ class WeightedGrid:
         return neighbors
 
 
-def heuristic(a, b):
-    (x1, y1) = a
-    (x2, y2) = b
-    return abs(x1 - x2) + abs(y1 - y2)
-
-
-def a_star_search(graph, start, goal):
+def dijkstra_search(graph, start, goal):
     frontier = []
 
     # start configurations
@@ -87,14 +81,14 @@ def a_star_search(graph, start, goal):
         # print(f"Visiting: {current}")
 
         if (current[0:2]) == goal:
-            print(f"found goal {current}")
+            # print(f"found goal {current}")
             break
 
         for next in graph.neighbors(current):
             new_cost = cost + graph.cost(current, next)
             if new_cost < cost_so_far.get(next, float("inf")):
                 cost_so_far[next] = new_cost
-                priority = new_cost  # + heuristic(next[0:2], goal)
+                priority = new_cost
                 heapq.heappush(frontier, (priority, next))
     return cost_so_far[current]
 
@@ -106,5 +100,5 @@ with open("../input/day17.txt") as f:
     w = len(grid[0])
 
 # part 1/2
-loss = a_star_search(graph, (0, 0), (w - 1, h - 1))
+loss = dijkstra_search(graph, (0, 0), (w - 1, h - 1))
 print(loss)
