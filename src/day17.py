@@ -1,6 +1,12 @@
 import heapq
-from enum import Enum
 
+# CRUCIBLE (p1)
+# MIN_STRAIGHT = 0
+# MAX_STRAIGHT = 3
+
+# ULTRA CRUCIBLE (p2)
+MIN_STRAIGHT = 3
+MAX_STRAIGHT = 10
 
 direction = {
     ">": (+1, 0),
@@ -34,22 +40,26 @@ class WeightedGrid:
         (x, y, _, _) = id
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def in_run(self, id):
-        (_, _, _, i) = id
-        return 0 <= i < 10
+    def in_max_straight(self, id):
+        (_, _, _, n) = id
+        return 0 <= n < MAX_STRAIGHT
+
+    def in_min_straight(self, id, prev_id):
+        (_, _, d, n) = prev_id
+        (_, _, dn, nn) = id
+        return not (n < MIN_STRAIGHT and (dn != d))
 
     def neighbors(self, id):
         (x, y, d, n) = id
 
         neighbors = []
         for dn in turns[d]:
-            if n < 3 and (dn != d):
-                continue
             nn = n + 1 if (dn == d) else 0
             (xs, ys) = direction[dn]
             neighbors.append((x + xs, y + ys, dn, nn))
         neighbors = filter(self.in_bounds, neighbors)
-        neighbors = filter(self.in_run, neighbors)
+        neighbors = filter(self.in_max_straight, neighbors)
+        neighbors = filter(lambda x: self.in_min_straight(x, id), neighbors)
         return neighbors
 
 
@@ -61,16 +71,24 @@ def heuristic(a, b):
 
 def a_star_search(graph, start, goal):
     frontier = []
-    heapq.heappush(frontier, (0, start))
+
+    # start configurations
+    s1 = (start[0], start[1], ">", 0)
+    s2 = (start[0], start[1], "v", 0)
+    heapq.heappush(frontier, (0, s1))
+    heapq.heappush(frontier, (0, s2))
+
     cost_so_far = {}
-    cost_so_far[start] = 0
+    cost_so_far[s1] = 0
+    cost_so_far[s2] = 0
+
     while frontier:
         cost, current = heapq.heappop(frontier)
         # print(f"Visiting: {current}")
+
         if (current[0:2]) == goal:
-            if current[-1] > 4:
-                print(f"found goal {current}")
-                break
+            print(f"found goal {current}")
+            break
 
         for next in graph.neighbors(current):
             new_cost = cost + graph.cost(current, next)
@@ -87,7 +105,6 @@ with open("../input/day17.txt") as f:
     h = len(grid)
     w = len(grid[0])
 
-# part 2
-start = (0, 0, "v", 0)
-cost = a_star_search(graph, start, (w - 1, h - 1))
-print(cost)
+# part 1/2
+loss = a_star_search(graph, (0, 0), (w - 1, h - 1))
+print(loss)
