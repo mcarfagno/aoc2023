@@ -36,6 +36,7 @@ def perimeter(vertices):
     return sum(a)
 
 
+# part 1
 def step(prev, inst):
     (dir, n, _) = inst
     n = int(n)
@@ -52,14 +53,47 @@ def step(prev, inst):
             return [x - n, y]
 
 
-poly = [[0, 0]]
-with open("../input/day18.txt") as f:
-    for line in f.readlines():
-        instr = re.split(" ", line)
-        poly.append(step(poly[-1], instr))
+def part1(input):
+    poly = [[0, 0]]
+    with open(input) as f:
+        for line in f:
+            instr = re.split(" ", line)
+            poly.append(step(poly[-1], instr))
+    # grid area[px] = points_outside + points_inside
+    out = perimeter(poly)
+    area = shoelace_area(poly)
+    return int(out + pick(area, out))
 
-# print(perimeter(poly))
-# print(shoelace_area(poly))
 
-# points outside + points inside
-print(perimeter(poly) + pick(shoelace_area(poly), perimeter(poly)))
+# part 2
+def step_hex(prev, inst):
+    dir = int(inst[-1], base=16)
+    n = int(inst[:5], base=16)
+    (x, y) = prev
+
+    match dir:
+        case 3:
+            return [x, y + n]
+        case 1:
+            return [x, y - n]
+        case 2:
+            return [x + n, y]
+        case 0:
+            return [x - n, y]
+
+
+def part2(input):
+    poly = [[0, 0]]
+    with open(input) as f:
+        for line in f:
+            # ty regex101 -> find everything enclosed in "(#" and ")"
+            instr = re.findall("\(#(.+)\)", line)[0]
+            poly.append(step_hex(poly[-1], instr))
+    # grid area[px] = points_outside + points_inside
+    out = perimeter(poly)
+    area = shoelace_area(poly)
+    return int(out + pick(area, out))
+
+
+print(part1("../input/day18.txt"))
+print(part2("../input/day18.txt"))
