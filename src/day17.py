@@ -5,8 +5,8 @@ from enum import Enum
 direction = {
     ">": (+1, 0),
     "<": (-1, 0),
-    "^": (0, +1),
-    "v": (0, -1),
+    "^": (0, -1),
+    "v": (0, +1),
 }
 
 turns = {
@@ -36,13 +36,15 @@ class WeightedGrid:
 
     def in_run(self, id):
         (_, _, _, i) = id
-        return 0 <= i < 3
+        return 0 <= i < 10
 
     def neighbors(self, id):
         (x, y, d, n) = id
 
         neighbors = []
         for dn in turns[d]:
+            if n < 3 and (dn != d):
+                continue
             nn = n + 1 if (dn == d) else 0
             (xs, ys) = direction[dn]
             neighbors.append((x + xs, y + ys, dn, nn))
@@ -63,14 +65,15 @@ def a_star_search(graph, start, goal):
     cost_so_far = {}
     cost_so_far[start] = 0
     while frontier:
-        _, current = heapq.heappop(frontier)
+        cost, current = heapq.heappop(frontier)
         # print(f"Visiting: {current}")
         if (current[0:2]) == goal:
-            print("found goal")
-            break
+            if current[-1] > 4:
+                print(f"found goal {current}")
+                break
 
         for next in graph.neighbors(current):
-            new_cost = cost_so_far[current] + graph.cost(current, next)
+            new_cost = cost + graph.cost(current, next)
             if new_cost < cost_so_far.get(next, float("inf")):
                 cost_so_far[next] = new_cost
                 priority = new_cost  # + heuristic(next[0:2], goal)
@@ -84,7 +87,7 @@ with open("../input/day17.txt") as f:
     h = len(grid)
     w = len(grid[0])
 
-# part 1
-start = (0, 0, ">", 0)
+# part 2
+start = (0, 0, "v", 0)
 cost = a_star_search(graph, start, (w - 1, h - 1))
 print(cost)
