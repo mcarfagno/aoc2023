@@ -1,9 +1,11 @@
-from math import sqrt
+from math import sqrt, hypot
 import re
 
 
 # cartesian area
 # https://en.wikipedia.org/wiki/Shoelace_formula
+# Triangle formula
+# NOTE: here I assume the last vertex is a copy of the first for (xny1 - x1yn)
 def shoelace_area(vertices):
     area = 0
     for i in range(len(vertices) - 1):
@@ -26,14 +28,11 @@ def perimeter(vertices):
     a = []
     for i in range(1, len(vertices)):
         a.append(
-            sqrt(
-                pow((vertices[i][0] - vertices[i - 1][0]), 2)
-                + pow(
-                    (vertices[i][1] - vertices[i - 1][1]),
-                    2,
-                )
+            hypot(
+                vertices[i][0] - vertices[i - 1][0], vertices[i][1] - vertices[i - 1][1]
             )
         )
+
     return sum(a)
 
 
