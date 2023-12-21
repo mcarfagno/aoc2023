@@ -1,5 +1,6 @@
 from collections import deque
 
+file = "../input/day21.txt"
 MAX_STEPS = 64
 
 
@@ -15,6 +16,9 @@ class SquareGrid:
 
     def passable(self, id):
         (x, y, _) = id
+        # wrap around the other side
+        # x = x % self.width
+        # y = y % self.height
         return self.tiles[y][x] != "#"
 
     def in_max_steps(self, id):
@@ -54,16 +58,18 @@ def breadth_first_search(graph, start):
     return reached
 
 
-with open("../input/day21.txt") as f:
-    grid = [line.strip() for line in f]
+def part1(file):
+    grid = [line.strip() for line in open(file).readlines()]
+    start = None
+    for y in range(len(grid)):
+        for x in range(len(grid[0])):
+            if grid[y][x] == "S":
+                start = (x, y, 0)
 
-start = None
-for y in range(len(grid)):
-    for x in range(len(grid[0])):
-        if grid[y][x] == "S":
-            start = (x, y, 0)
+    graph = SquareGrid(grid)
+    x = breadth_first_search(graph, start)
+    x = list(filter(lambda x: x[2] == MAX_STEPS, list(x.keys())))
+    return len(x)
 
-graph = SquareGrid(grid)
-x = breadth_first_search(graph, start)
-x = list(filter(lambda x: x[2] == MAX_STEPS, list(x.keys())))
-print(len(x))
+
+print(part1(file))
